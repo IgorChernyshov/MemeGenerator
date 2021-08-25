@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreGraphics
 
 final class ViewController: UIViewController {
 
@@ -22,18 +23,19 @@ final class ViewController: UIViewController {
 	}
 	private var topText: String? {
 		didSet {
-//			renderMeme()
+			renderMeme()
 		}
 	}
 	private var bottomText: String? {
 		didSet {
-//			renderMeme()
+			renderMeme()
 		}
 	}
 
 	// MARK: - Lifecycle
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		title = "Meme Generator"
 		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonDidTap))
 	}
 
@@ -81,9 +83,34 @@ final class ViewController: UIViewController {
 
 	// MARK: - Meme Rendering
 	private func renderMeme() {
-		// Stub.
-		// TODO: - True rendering
-		imageView.image = sourceImage
+		guard let image = sourceImage else {
+			imageView.image = sourceImage
+			return
+		}
+
+		let imageSize = imageView.bounds.size
+		let renderer = UIGraphicsImageRenderer(size: imageSize)
+		let memeImage = renderer.image { [weak self] context in
+			image.draw(at: CGPoint(x: 0, y: 0))
+
+			let paragraphStyle = NSMutableParagraphStyle()
+			paragraphStyle.alignment = .center
+
+			let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 24),
+															 .foregroundColor: UIColor.label,
+															 .backgroundColor: UIColor.systemBackground,
+															 .paragraphStyle: paragraphStyle]
+
+			let topString = self?.topText ?? ""
+			let topStringAttributed = NSAttributedString(string: topString, attributes: attributes)
+			topStringAttributed.draw(with: CGRect(x: 32, y: 16, width: imageSize.width - 64, height: 64), options: .usesLineFragmentOrigin, context: nil)
+
+			let bottomString = self?.bottomText ?? ""
+			let bottomStringAttributed = NSAttributedString(string: bottomString, attributes: attributes)
+			bottomStringAttributed.draw(with: CGRect(x: 32, y: imageSize.height - 42, width: imageSize.width - 64, height: 64), options: .usesLineFragmentOrigin, context: nil)
+		}
+
+		imageView.image = memeImage
 	}
 }
 
