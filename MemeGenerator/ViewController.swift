@@ -18,6 +18,7 @@ final class ViewController: UIViewController {
 	private var sourceImage: UIImage? {
 		didSet {
 			hintLabel.isHidden = sourceImage != nil
+			navigationItem.leftBarButtonItem?.isEnabled = sourceImage != nil
 			renderMeme()
 		}
 	}
@@ -36,6 +37,8 @@ final class ViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		title = "Meme Generator"
+		navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareDidTap))
+		navigationItem.leftBarButtonItem?.isEnabled = false
 		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonDidTap))
 	}
 
@@ -79,6 +82,14 @@ final class ViewController: UIViewController {
 			}
 		})
 		present(textInputController, animated: UIView.areAnimationsEnabled)
+	}
+
+	@objc private func shareDidTap() {
+		guard let image = imageView.image?.jpegData(compressionQuality: 0.8) else {
+			return assertionFailure("User did tap share when no image is selected")
+		}
+		let activityController = UIActivityViewController(activityItems: [image], applicationActivities: [])
+		present(activityController, animated: UIView.areAnimationsEnabled)
 	}
 
 	// MARK: - Meme Rendering
